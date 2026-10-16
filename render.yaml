@@ -12,9 +12,10 @@ services:
         value: production
       - key: PORT
         value: 5000
-      - key: MONGO_URI
-        sync: false
       - key: JWT_SECRET
-        sync: false
+        value: super_secret_jwt_key_water_treatment_2026
       - key: CLIENT_URL
-        sync: false
+        value: https://ai-water-treatment-monitoring-eta.vercel.app
+      - key: MONGO_URI
+        value: mongodb://sureshsudharsan19_db_user:<db_password>@ac-yytxmag-shard-00-00.iqcey5e.mongodb.net:27017,ac-yytxmag-shard-00-01.iqcey5e.mongodb.net:27017,ac-yytxmag-shard-00-02.iqcey5e.mongodb.net:27017/water_treatment_db?ssl=true&replicaSet=atlas-mkx9fg-shard-0&authSource=admin
+
