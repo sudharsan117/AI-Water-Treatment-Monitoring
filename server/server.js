@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 
+const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const { startSimulator } = require('./services/sensorSimulator');
@@ -22,10 +23,11 @@ const thresholdRoutes = require('./routes/thresholdRoutes');
 
 const app = express();
 
-// CORS — allow local dev + deployed Vercel frontend
+// CORS — allow local dev + deployed Vercel frontend (including preview URLs)
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://ai-water-treatment-monitoring-eta.vercel.app',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
@@ -33,7 +35,11 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (Render health checks, curl, Postman)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+    if (
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app') ||
+      process.env.NODE_ENV !== 'production'
+    ) {
       return callback(null, true);
     }
     callback(new Error('Not allowed by CORS'));
@@ -46,14 +52,40 @@ app.use(express.urlencoded({ extended: true }));
 // Serve Uploads Folder for PDF Reports
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+const getDbStatus = () => {
+  const states = ['DISCONNECTED', 'CONNECTED', 'CONNECTING', 'DISCONNECTING'];
+  return states[mongoose.connection.readyState] || 'UNKNOWN';
+};
+
 // Root & Health Check Endpoint
 app.get('/', (req, res) => {
   res.json({
     status: 'ONLINE',
     system: 'AI-Powered Water Treatment Plant Monitoring & Chemical Optimization System',
     type: 'MERN Prototype Demonstration',
+    database: getDbStatus(),
     timestamp: new Date()
   });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ONLINE',
+    database: getDbStatus(),
+    timestamp: new Date()
+  });
+});
+
+// Database connectivity check for API routes
+app.use('/api', (req, res, next) => {
+  if (req.path === '/health') return next();
+  if (mongoose.connection.readyState !== 1) {
+    return res.status(503).json({
+      message: 'Database is currently disconnected. Please verify MONGO_URI in Render environment variables and MongoDB Atlas Network Access (0.0.0.0/0).',
+      dbStatus: getDbStatus()
+    });
+  }
+  next();
 });
 
 // API Routes
@@ -76,12 +108,15 @@ const PORT = process.env.PORT || 5000;
 
 // Auto-seed helper — runs seed if DB is empty (fresh Atlas deployment)
 const autoSeedIfEmpty = async () => {
+  if (mongoose.connection.readyState !== 1) {
+    console.log('⏳ MongoDB not connected yet; auto-seed will run once connected.');
+    return;
+  }
   try {
     const User = require('./models/User');
     const count = await User.countDocuments();
     if (count === 0) {
       console.log('📦 Empty database detected — running auto-seed for demo data...');
-      // Dynamically import seed logic (without its own mongoose.connect call)
       const seedModule = require('./seed/seedData');
       await seedModule();
       console.log('✅ Auto-seed completed successfully!');
@@ -92,6 +127,11 @@ const autoSeedIfEmpty = async () => {
     console.error('⚠️  Auto-seed error (non-fatal):', err.message);
   }
 };
+
+mongoose.connection.on('connected', async () => {
+  console.log('✅ MongoDB connection established.');
+  await autoSeedIfEmpty();
+});
 
 // Connect DB & Start Server
 connectDB().then(async () => {

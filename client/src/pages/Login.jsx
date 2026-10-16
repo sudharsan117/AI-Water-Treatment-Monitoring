@@ -21,7 +21,11 @@ const Login = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please verify credentials.');
+      if (err.message && (err.message.includes('Network Error') || err.message.includes('timeout'))) {
+        setError('Cannot reach server. If Render free tier is waking up, please wait ~30 seconds and retry.');
+      } else {
+        setError(err.response?.data?.message || 'Login failed. Please verify credentials.');
+      }
     } finally {
       setLoading(false);
     }
