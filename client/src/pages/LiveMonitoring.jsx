@@ -43,16 +43,41 @@ const LiveMonitoring = () => {
           const s = item.sensor;
           const r = item.latestReading;
           if (!s) return null;
+
+          const getStatusStyle = (status) => {
+            switch (status) {
+              case 'ONLINE':
+                return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+              case 'WARNING':
+                return 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+              case 'CRITICAL':
+                return 'bg-red-500/10 text-red-400 border border-red-500/20';
+              default:
+                return 'bg-slate-800 text-slate-400';
+            }
+          };
+
+          const getQualityStyle = (quality) => {
+            switch (quality) {
+              case 'GOOD':
+                return 'text-emerald-400 font-bold';
+              case 'FAIR':
+                return 'text-amber-400 font-bold';
+              case 'POOR':
+                return 'text-red-400 font-bold';
+              default:
+                return 'text-slate-300 font-bold';
+            }
+          };
+
           return (
-            <div key={s._id} className="bg-slate-900 border border-slate-800 p-5 rounded-xl space-y-3">
+            <div key={s._id} className="bg-slate-900 border border-slate-800 p-5 rounded-xl space-y-3 shadow-lg hover:border-slate-700 transition-colors">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-semibold text-slate-200">{s.name}</h3>
                   <p className="text-[11px] text-slate-500">{s.location}</p>
                 </div>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  s.status === 'ONLINE' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
-                }`}>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getStatusStyle(s.status)}`}>
                   {s.status}
                 </span>
               </div>
@@ -63,7 +88,7 @@ const LiveMonitoring = () => {
               </div>
 
               <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1">
-                <span>Quality: <strong className="text-slate-300">{r ? r.quality : 'GOOD'}</strong></span>
+                <span>Quality: <strong className={getQualityStyle(r ? r.quality : 'GOOD')}>{r ? r.quality : 'GOOD'}</strong></span>
                 <span>Type: {s.type}</span>
               </div>
             </div>

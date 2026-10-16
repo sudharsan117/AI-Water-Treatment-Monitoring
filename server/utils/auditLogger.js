@@ -2,7 +2,9 @@ const AuditLog = require('../models/AuditLog');
 
 const logAuditAction = async ({ userId, action, entityType, entityId, details, req }) => {
   try {
-    const ipAddress = req ? (req.headers['x-forwarded-for'] || req.socket.remoteAddress) : 'SYSTEM';
+    const ipAddress = (req && req.headers) 
+      ? (req.headers['x-forwarded-for'] || (req.socket && req.socket.remoteAddress) || '127.0.0.1')
+      : 'SYSTEM';
     await AuditLog.create({
       userId: userId || null,
       action,

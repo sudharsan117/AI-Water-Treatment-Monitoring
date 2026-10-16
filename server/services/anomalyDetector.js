@@ -62,8 +62,45 @@ const calculateWaterQualityScore = (pH, turbidity, chlorine) => {
   return Math.max(0, Math.min(100, Math.round(score)));
 };
 
+/**
+ * Calculates equipment health score & status based on vibration & temperature telemetry.
+ * Vibration threshold: warn > 2.5 mm/s, critical > 4.5 mm/s
+ * Temperature threshold: warn > 70°C, critical > 85°C
+ */
+const calculateEquipmentHealth = (vibration, temperature) => {
+  let score = 100;
+  const vib = Number(vibration) || 0.5;
+  const temp = Number(temperature) || 45.0;
+
+  // Vibration Penalty
+  if (vib > 4.5) {
+    score -= 40 + (vib - 4.5) * 15;
+  } else if (vib > 2.5) {
+    score -= 15 + (vib - 2.5) * 10;
+  }
+
+  // Temperature Penalty
+  if (temp > 85.0) {
+    score -= 35 + (temp - 85.0) * 2;
+  } else if (temp > 70.0) {
+    score -= 15 + (temp - 70.0) * 1;
+  }
+
+  const finalScore = Math.max(15, Math.min(100, Math.round(score)));
+
+  let status = 'OPERATIONAL';
+  if (finalScore < 50 || vib > 4.5 || temp > 85.0) {
+    status = 'CRITICAL';
+  } else if (finalScore <= 80 || vib > 2.5 || temp > 70.0) {
+    status = 'WARNING';
+  }
+
+  return { healthScore: finalScore, status };
+};
+
 module.exports = {
   THRESHOLDS,
   checkReadingAnomaly,
-  calculateWaterQualityScore
+  calculateWaterQualityScore,
+  calculateEquipmentHealth
 };

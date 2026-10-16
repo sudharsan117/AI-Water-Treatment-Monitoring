@@ -101,11 +101,12 @@ const Dashboard = () => {
   // Calculate Prototype Plant Health
   const calculatePlantHealth = () => {
     let health = 100;
-    if (alerts.length > 0) health -= alerts.length * 5;
+    if (alerts.length > 0) health -= Math.min(15, alerts.length * 3);
     equipment.forEach(e => {
-      if (e.healthScore < 60) health -= 10;
+      if (e.status === 'CRITICAL') health -= 8;
+      else if (e.status === 'WARNING') health -= 4;
     });
-    return Math.max(30, Math.min(100, Math.round(health)));
+    return Math.max(40, Math.min(100, Math.round(health)));
   };
 
   const plantHealthScore = calculatePlantHealth();
@@ -338,17 +339,17 @@ const Dashboard = () => {
           </div>
 
           <div className="space-y-3">
-            {equipment.slice(0, 4).map((eq) => (
+            {equipment.map((eq) => (
               <div key={eq._id} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-300 font-medium truncate max-w-[160px]">{eq.name}</span>
-                  <span className={`font-semibold ${eq.healthScore > 80 ? 'text-emerald-400' : (eq.healthScore > 60 ? 'text-amber-400' : 'text-red-400')}`}>
+                  <span className={`font-semibold ${eq.healthScore > 80 ? 'text-emerald-400' : (eq.healthScore > 50 ? 'text-amber-400' : 'text-red-400')}`}>
                     {eq.healthScore}%
                   </span>
                 </div>
                 <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
                   <div
-                    className={`h-full ${eq.healthScore > 80 ? 'bg-emerald-500' : (eq.healthScore > 60 ? 'bg-amber-500' : 'bg-red-500')}`}
+                    className={`h-full ${eq.healthScore > 80 ? 'bg-emerald-500' : (eq.healthScore > 50 ? 'bg-amber-500' : 'bg-red-500')}`}
                     style={{ width: `${eq.healthScore}%` }}
                   />
                 </div>

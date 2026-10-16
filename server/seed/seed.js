@@ -14,7 +14,7 @@ const Threshold = require('../models/Threshold');
 
 const seedDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/water_treatment_db';
+    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27018/water_treatment_db';
     console.log('Connecting to MongoDB for seeding...', mongoUri);
     await mongoose.connect(mongoUri);
 
@@ -77,7 +77,7 @@ const seedDB = async () => {
       status: 'MAINTENANCE'
     });
 
-    console.log('Creating Sensors for Plant 1...');
+    console.log('Creating Sensors (10 ONLINE, 1 WARNING, 1 CRITICAL)...');
     const sensorsData = [
       { plantId: plant1._id, name: 'pH Sensor Alpha', type: 'pH', location: 'Clarifier Intake', unit: 'pH', status: 'ONLINE' },
       { plantId: plant1._id, name: 'Turbidity Sensor Beta', type: 'Turbidity', location: 'Post-Flocculation', unit: 'NTU', status: 'ONLINE' },
@@ -87,12 +87,12 @@ const seedDB = async () => {
       
       { plantId: plant2._id, name: 'North Intake pH', type: 'pH', location: 'Reservoir Intake', unit: 'pH', status: 'ONLINE' },
       { plantId: plant2._id, name: 'North Turbidity Meter', type: 'Turbidity', location: 'Filter Gallery', unit: 'NTU', status: 'ONLINE' },
-      { plantId: plant2._id, name: 'North Chlorine Analyzer', type: 'Chlorine', location: 'Disinfection Tank', unit: 'mg/L', status: 'ONLINE' },
+      { plantId: plant2._id, name: 'North Chlorine Analyzer', type: 'Chlorine', location: 'Disinfection Tank', unit: 'mg/L', status: 'WARNING' },
       { plantId: plant2._id, name: 'North Flow Rate Sensor', type: 'Flow', location: 'Main Pipe A', unit: 'GPM', status: 'ONLINE' },
       { plantId: plant2._id, name: 'North Main Pressure Gauge', type: 'Pressure', location: 'Pump Output', unit: 'PSI', status: 'ONLINE' },
 
-      { plantId: plant3._id, name: 'West Bay pH Monitor', type: 'pH', location: 'Reclamation Feed', unit: 'pH', status: 'ONLINE' },
-      { plantId: plant3._id, name: 'West Bay Turbidity Monitor', type: 'Turbidity', location: 'Sand Filter Outlet', unit: 'NTU', status: 'WARNING' }
+      { plantId: plant3._id, name: 'West Bay pH Monitor', type: 'pH', location: 'Reclamation Feed', unit: 'pH', status: 'CRITICAL' },
+      { plantId: plant3._id, name: 'West Bay Turbidity Monitor', type: 'Turbidity', location: 'Sand Filter Outlet', unit: 'NTU', status: 'ONLINE' }
     ];
 
     const sensors = await Sensor.insertMany(sensorsData);
@@ -107,17 +107,17 @@ const seedDB = async () => {
     ];
     await Threshold.insertMany(thresholdsData);
 
-    console.log('Creating Equipment...');
+    console.log('Creating Equipment (Preserving Healthy / Operational Demo State)...');
     const equipmentData = [
       { plantId: plant1._id, name: 'Raw Water Intake Pump 101', type: 'Intake Pump', status: 'OPERATIONAL', healthScore: 94, vibration: 0.6, temperature: 46.5, runtimeHours: 2450 },
-      { plantId: plant1._id, name: 'High-Speed Flocculation Mixer', type: 'Mixer', status: 'OPERATIONAL', healthScore: 89, vibration: 1.2, temperature: 52.0, runtimeHours: 1890 },
-      { plantId: plant1._id, name: 'Primary Chlorine Dosing Pump', type: 'Dosing Pump', status: 'WARNING', healthScore: 72, vibration: 2.8, temperature: 68.4, runtimeHours: 3120 },
-      { plantId: plant1._id, name: 'Clearwell Booster Pump 3', type: 'Booster Pump', status: 'CRITICAL', healthScore: 41, vibration: 4.8, temperature: 84.2, runtimeHours: 4890 },
-      { plantId: plant1._id, name: 'Rapid Sand Filter Actuator A', type: 'Filter System', status: 'OPERATIONAL', healthScore: 96, vibration: 0.4, temperature: 42.0, runtimeHours: 1100 },
+      { plantId: plant1._id, name: 'High-Speed Flocculation Mixer', type: 'Mixer', status: 'OPERATIONAL', healthScore: 92, vibration: 0.8, temperature: 52.0, runtimeHours: 1890 },
+      { plantId: plant1._id, name: 'Primary Chlorine Dosing Pump', type: 'Dosing Pump', status: 'OPERATIONAL', healthScore: 90, vibration: 1.1, temperature: 50.0, runtimeHours: 3120 },
+      { plantId: plant1._id, name: 'Clearwell Booster Pump 3', type: 'Booster Pump', status: 'WARNING', healthScore: 70, vibration: 3.1, temperature: 68.0, runtimeHours: 4890 },
+      { plantId: plant1._id, name: 'Rapid Sand Filter Actuator A', type: 'Filter System', status: 'OPERATIONAL', healthScore: 95, vibration: 0.4, temperature: 42.0, runtimeHours: 1100 },
       
-      { plantId: plant2._id, name: 'Northside Main Feed Pump', type: 'Intake Pump', status: 'OPERATIONAL', healthScore: 91, vibration: 0.8, temperature: 48.0, runtimeHours: 1540 },
-      { plantId: plant2._id, name: 'Coagulant Metering Unit', type: 'Dosing Unit', status: 'OPERATIONAL', healthScore: 88, vibration: 1.1, temperature: 49.5, runtimeHours: 980 },
-      { plantId: plant2._id, name: 'Backwash Air Blower 2', type: 'Blower', status: 'WARNING', healthScore: 68, vibration: 3.2, temperature: 74.0, runtimeHours: 2780 }
+      { plantId: plant2._id, name: 'Northside Main Feed Pump', type: 'Intake Pump', status: 'OPERATIONAL', healthScore: 91, vibration: 0.7, temperature: 48.0, runtimeHours: 1540 },
+      { plantId: plant2._id, name: 'Coagulant Metering Unit', type: 'Dosing Unit', status: 'OPERATIONAL', healthScore: 88, vibration: 1.0, temperature: 49.5, runtimeHours: 980 },
+      { plantId: plant2._id, name: 'Backwash Air Blower 2', type: 'Blower', status: 'CRITICAL', healthScore: 35, vibration: 5.2, temperature: 84.5, runtimeHours: 2780 }
     ];
     const equipmentList = await Equipment.insertMany(equipmentData);
 
@@ -131,33 +131,37 @@ const seedDB = async () => {
       const timestamp = new Date(now - i * intervalMs);
       
       sensors.forEach(sensor => {
-        let baseVal = 7.2;
-        if (sensor.type === 'Turbidity') baseVal = 1.6;
-        if (sensor.type === 'Chlorine') baseVal = 1.4;
-        if (sensor.type === 'Flow') baseVal = 120;
-        if (sensor.type === 'Pressure') baseVal = 48;
+        let baseVal = 7.35;
+        let noiseAmp = 0.05;
 
-        // Add pseudo sinusoidal curve + random noise
+        if (sensor.name === 'West Bay pH Monitor') {
+          baseVal = 9.35;
+          noiseAmp = 0.08;
+        } else if (sensor.name === 'North Chlorine Analyzer') {
+          baseVal = 0.82;
+          noiseAmp = 0.04;
+        } else {
+          if (sensor.type === 'Turbidity') { baseVal = 1.35; noiseAmp = 0.10; }
+          if (sensor.type === 'Chlorine') { baseVal = 1.65; noiseAmp = 0.08; }
+          if (sensor.type === 'Flow') { baseVal = 125; noiseAmp = 2.0; }
+          if (sensor.type === 'Pressure') { baseVal = 48.5; noiseAmp = 1.0; }
+        }
+
+        // Add small sinusoidal curve + random noise
         const sineShift = Math.sin((steps - i) / 10);
-        const noise = (Math.random() - 0.5) * 0.3;
-        let val = baseVal + sineShift * (baseVal * 0.05) + noise;
+        const noise = (Math.random() - 0.5) * noiseAmp;
+        let val = baseVal + sineShift * (baseVal * 0.01) + noise;
 
-        // Add anomaly spike at t-10 steps
-        if (i === 10 && sensor.type === 'Chlorine') val = 0.4;
-        if (i === 8 && sensor.type === 'Turbidity') val = 4.2;
-
-        if (sensor.type === 'pH') val = Math.max(6.0, Math.min(9.0, val));
-        if (sensor.type === 'Turbidity') val = Math.max(0.3, Math.min(8.0, val));
-        if (sensor.type === 'Chlorine') val = Math.max(0.2, Math.min(3.5, val));
-        if (sensor.type === 'Flow') val = Math.max(40, Math.min(180, val));
-        if (sensor.type === 'Pressure') val = Math.max(20, Math.min(80, val));
+        let quality = 'GOOD';
+        if (sensor.name === 'West Bay pH Monitor') quality = 'POOR';
+        else if (sensor.name === 'North Chlorine Analyzer') quality = 'FAIR';
 
         readings.push({
           sensorId: sensor._id,
           plantId: sensor.plantId,
           parameter: sensor.type,
           value: parseFloat(val.toFixed(2)),
-          quality: (val < 0.5 || val > 4.0) ? 'POOR' : 'GOOD',
+          quality,
           timestamp
         });
       });
@@ -165,36 +169,46 @@ const seedDB = async () => {
 
     await SensorReading.insertMany(readings);
 
-    console.log('Creating Initial Alerts...');
+    console.log('Creating Initial Demo Alerts...');
+    const westBaySensor = sensors.find(s => s.name === 'West Bay pH Monitor');
+    const northChlorineSensor = sensors.find(s => s.name === 'North Chlorine Analyzer');
+
     await Alert.create([
       {
-        plantId: plant1._id,
-        equipmentId: equipmentList[3]._id,
+        plantId: plant2._id,
+        equipmentId: equipmentList[7]._id,
         severity: 'CRITICAL',
-        type: 'EQUIPMENT_VIBRATION',
-        message: 'Clearwell Booster Pump 3 vibration level exceeded threshold (4.8 mm/s). High overheating risk.',
+        type: 'EQUIPMENT_HEALTH',
+        message: 'Backwash Air Blower 2 vibration level exceeded threshold (5.2 mm/s) & temp high (84.5°C). Prototype Health Score: 35%.',
         status: 'NEW',
         timestamp: new Date(now - 45 * 60 * 1000)
       },
       {
         plantId: plant1._id,
-        sensorId: sensors[2]._id,
+        equipmentId: equipmentList[3]._id,
         severity: 'WARNING',
-        type: 'LOW_CHLORINE_RESIDUAL',
-        message: 'Residual Chlorine dropped below lower target boundary (0.95 mg/L). AI recommendation updated.',
+        type: 'EQUIPMENT_HEALTH',
+        message: 'Clearwell Booster Pump 3 exhibits elevated vibration (3.1 mm/s). Maintenance recommended.',
         status: 'NEW',
-        timestamp: new Date(now - 20 * 60 * 1000)
+        timestamp: new Date(now - 30 * 60 * 1000)
       },
       {
-        plantId: plant1._id,
-        sensorId: sensors[1]._id,
-        severity: 'INFO',
-        type: 'TURBIDITY_ELEVATED',
-        message: 'Turbidity transient fluctuation detected during backwash cycle (2.4 NTU).',
-        status: 'ACKNOWLEDGED',
-        acknowledgedBy: operatorUser._id,
-        acknowledgedAt: new Date(now - 120 * 60 * 1000),
-        timestamp: new Date(now - 150 * 60 * 1000)
+        plantId: plant3._id,
+        sensorId: westBaySensor._id,
+        severity: 'CRITICAL',
+        type: 'ANOMALY_DETECTION',
+        message: 'West Bay pH Monitor: pH level exceeded 9.35 (Above critical maximum 8.5)',
+        status: 'NEW',
+        timestamp: new Date(now - 25 * 60 * 1000)
+      },
+      {
+        plantId: plant2._id,
+        sensorId: northChlorineSensor._id,
+        severity: 'WARNING',
+        type: 'ANOMALY_DETECTION',
+        message: 'North Chlorine Analyzer: Chlorine is approaching lower warning boundary (0.82 mg/L)',
+        status: 'NEW',
+        timestamp: new Date(now - 15 * 60 * 1000)
       }
     ]);
 
@@ -203,11 +217,11 @@ const seedDB = async () => {
       {
         plantId: plant1._id,
         chemical: 'Chlorine',
-        currentValue: 1.1,
-        recommendedDose: 2.1,
-        approvedDose: 2.1,
-        confidence: 94,
-        reason: 'Residual Chlorine is below target (1.1 mg/L). Elevated inflow turbidity requires increased dosage.',
+        currentValue: 1.65,
+        recommendedDose: 1.85,
+        approvedDose: 1.85,
+        confidence: 96,
+        reason: 'Maintain optimal residual chlorine disinfectant concentration (1.65 mg/L baseline).',
         status: 'APPROVED',
         createdBy: operatorUser._id,
         approvedBy: operatorUser._id,
@@ -216,12 +230,12 @@ const seedDB = async () => {
       {
         plantId: plant1._id,
         chemical: 'Chlorine',
-        currentValue: 0.9,
-        recommendedDose: 2.3,
-        approvedDose: 2.0,
-        confidence: 91,
-        reason: 'Low chlorine residual detected in clearwell discharge.',
-        status: 'ADJUSTED',
+        currentValue: 1.60,
+        recommendedDose: 1.80,
+        approvedDose: 1.80,
+        confidence: 94,
+        reason: 'Optimal chlorine residual target maintained in clearwell discharge.',
+        status: 'APPROVED',
         createdBy: operatorUser._id,
         approvedBy: operatorUser._id,
         timestamp: new Date(now - 1 * 3600 * 1000)
@@ -232,17 +246,17 @@ const seedDB = async () => {
     await DigitalTwinSimulation.create([
       {
         plantId: plant1._id,
-        inputParameters: { pH: 7.2, turbidity: 2.4, chlorine: 1.1, flow: 135, pressure: 46 },
-        chemicalDose: 2.1,
+        inputParameters: { pH: 7.35, turbidity: 1.35, chlorine: 1.65, flow: 125, pressure: 48.5 },
+        chemicalDose: 1.85,
         predictedOutput: {
-          predictedTurbidity: 1.6,
-          predictedChlorine: 1.95,
-          predictedPH: 7.15,
-          waterQualityScore: 94,
-          feedback: 'Optimal Dose: Predicted water quality score improves to 94/100.'
+          predictedTurbidity: 0.45,
+          predictedChlorine: 1.85,
+          predictedPH: 7.30,
+          waterQualityScore: 95,
+          feedback: 'Optimal Dose: Predicted water quality score reaches 95/100.'
         },
-        waterQualityScore: 94,
-        recommendation: 'Optimal Dose: Disinfection efficiency improved without excess residual.',
+        waterQualityScore: 95,
+        recommendation: 'Optimal Dose: High disinfectant stability and clean effluent quality.',
         createdBy: operatorUser._id,
         timestamp: new Date(now - 2 * 3600 * 1000)
       }
@@ -264,7 +278,7 @@ const seedDB = async () => {
         action: 'DOSE_APPROVED',
         entityType: 'ChemicalDose',
         entityId: '002',
-        details: 'Approved Chlorine dose of 2.1 mg/L based on AI recommendation',
+        details: 'Approved Chlorine dose of 1.85 mg/L based on AI recommendation',
         ipAddress: '127.0.0.1',
         timestamp: new Date(now - 3 * 3600 * 1000)
       }
