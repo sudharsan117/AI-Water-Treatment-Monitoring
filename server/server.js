@@ -74,8 +74,28 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
+// Auto-seed helper — runs seed if DB is empty (fresh Atlas deployment)
+const autoSeedIfEmpty = async () => {
+  try {
+    const User = require('./models/User');
+    const count = await User.countDocuments();
+    if (count === 0) {
+      console.log('📦 Empty database detected — running auto-seed for demo data...');
+      // Dynamically import seed logic (without its own mongoose.connect call)
+      const seedModule = require('./seed/seedData');
+      await seedModule();
+      console.log('✅ Auto-seed completed successfully!');
+    } else {
+      console.log(`✅ Database already has ${count} users — skipping auto-seed.`);
+    }
+  } catch (err) {
+    console.error('⚠️  Auto-seed error (non-fatal):', err.message);
+  }
+};
+
 // Connect DB & Start Server
-connectDB().then(() => {
+connectDB().then(async () => {
+  await autoSeedIfEmpty();
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
     // Start live sensor simulator polling loop every 4 seconds
